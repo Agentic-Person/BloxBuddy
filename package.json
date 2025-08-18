@@ -1,0 +1,15 @@
+{
+  "name": "blox-buddy-workspace",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "cd landing && npm ci && npm run build",
+    "start": "cd landing && npm start",
+    "dev": "cd landing && npm start"
+  },
+  "workspaces": [
+    "app",
+    "blox-buddy-app", 
+    "landing"
+  ]
+}
