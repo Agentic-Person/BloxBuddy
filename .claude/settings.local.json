@@ -10,7 +10,13 @@
       "Bash(PORT=3001 npm start)",
       "Bash(timeout:*)",
       "Bash(PORT=3002 npm start)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(gh repo create:*)",
+      "Bash(git branch:*)",
+      "Bash(git fetch:*)",
+      "Bash(cp:*)",
+      "Bash(true)",
+      "Bash(mv:*)"
     ],
     "deny": [],
     "ask": []
