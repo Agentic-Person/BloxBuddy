@@ -19,7 +19,7 @@ import {
   Video,
   ArrowRight
 } from 'lucide-react';
-import Sidebar from '../components/layout/Sidebar';
+import Sidebar from '@/components/layout/Sidebar';
 
 // Mock curriculum data - 6 month journey
 const curriculum = [

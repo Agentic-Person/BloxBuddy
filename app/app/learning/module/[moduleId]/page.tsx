@@ -28,8 +28,8 @@ import {
   Search,
   X
 } from 'lucide-react';
-import Sidebar from '../../components/layout/Sidebar';
-import AIAssistant from '../../components/chat/AIAssistant';
+import Sidebar from '@/components/layout/Sidebar';
+import AIAssistant from '@/components/chat/AIAssistant';
 import Link from 'next/link';
 
 // Module data with all videos organized by week
