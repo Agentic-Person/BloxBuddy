@@ -16,7 +16,8 @@
       "Bash(git fetch:*)",
       "Bash(cp:*)",
       "Bash(true)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": []
