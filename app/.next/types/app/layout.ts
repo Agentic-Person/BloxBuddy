@@ -1,4 +1,4 @@
-// File: D:\BloxBuddyPrj\BloxBuddy\BloxBuddyWebsite\blox-buddy\app\app\layout.js
+// File: D:\BloxBuddyPrj\BloxBuddy\BloxBuddyWebsite\blox-buddy\app\app\layout.tsx
 import * as entry from '../../../app/layout.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
