@@ -7,9 +7,17 @@
       "config": {
         "distDir": "build"
       }
+    },
+    {
+      "src": "app/package.json", 
+      "use": "@vercel/next"
     }
   ],
   "routes": [
+    {
+      "src": "/app/(.*)",
+      "dest": "/app/$1"
+    },
     {
       "src": "/(.*)",
       "dest": "/landing/$1"
