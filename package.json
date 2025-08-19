@@ -3,13 +3,11 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "cd landing && npm ci && npm run build",
-    "start": "cd landing && npm start",
-    "dev": "cd landing && npm start"
+    "build": "cd app && npm run build",
+    "start": "cd app && npm start", 
+    "dev": "cd app && npm run dev"
   },
   "workspaces": [
-    "app",
-    "blox-buddy-app", 
-    "landing"
+    "app"
   ]
 }
