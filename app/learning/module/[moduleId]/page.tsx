@@ -30,7 +30,9 @@ import {
 } from 'lucide-react';
 import Sidebar from '@/components/layout/Sidebar';
 import AIAssistant from '@/components/chat/AIAssistant';
+import WeekOverview from '@/components/learning/WeekOverview';
 import Link from 'next/link';
+import { sampleModule3 } from '@/lib/curriculum/curriculum-data';
 
 // Module data with all videos organized by week
 const moduleData = {
@@ -282,6 +284,7 @@ export default function ModuleDetailPage() {
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedWeek, setSelectedWeek] = useState<number>(10); // Default to week 10 as current
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   if (!module) {
@@ -734,6 +737,20 @@ export default function ModuleDetailPage() {
 
           {/* Sidebar */}
           <div className="space-y-6">
+            {/* Week Overview */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+            >
+              <WeekOverview 
+                weeks={sampleModule3.weeks_data}
+                selectedWeek={selectedWeek}
+                onWeekSelect={setSelectedWeek}
+                moduleId={3}
+              />
+            </motion.div>
+
             {/* AI Assistant */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}

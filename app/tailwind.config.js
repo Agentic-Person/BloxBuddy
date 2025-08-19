@@ -11,7 +11,10 @@ module.exports = {
         'blox-darkblue': '#0a0f1c',
         'blox-darkblue2': '#111827',
         'blox-purple-deep': '#1e1b4b',
-        'blox-purple-default': '#6366f1',
+        'blox-purple': {
+          'DEFAULT': '#6366f1',
+          'deep': '#1e1b4b'
+        },
         'blox-teal': '#14b8a6',
         'blox-success': '#10b981',
         'blox-glass-border': 'rgba(255, 255, 255, 0.1)',
