@@ -24,10 +24,10 @@ const PlacementSystem: React.FC = () => {
   const raycaster = useRef(new THREE.Raycaster());
   const mouse = useRef(new THREE.Vector2());
 
-  // Snap to grid - different logic for fences vs other objects
-  const snapToGrid = (value: number, isFence: boolean = false): number => {
-    if (isFence) {
-      // For fences, snap to grid intersections (0.5, 1.5, 2.5, etc.)
+  // Snap to grid - different logic for fences/gates vs other objects
+  const snapToGrid = (value: number, isFenceOrGate: boolean = false): number => {
+    if (isFenceOrGate) {
+      // For fences and gates, snap to grid intersections (0.5, 1.5, 2.5, etc.)
       return Math.round(value - 0.5) + 0.5;
     } else {
       // For other objects, snap to grid centers (0, 1, 2, etc.)
@@ -36,10 +36,20 @@ const PlacementSystem: React.FC = () => {
   };
 
   // Check if position is within the platform boundaries (8x8 platform)
-  const isWithinBounds = (x: number, z: number): boolean => {
+  const isWithinBounds = (x: number, z: number, isFenceOrGate: boolean = false): boolean => {
     const platformSize = 8;
-    const halfSize = platformSize / 2;
-    return x >= -halfSize && x <= halfSize && z >= -halfSize && z <= halfSize;
+    const halfSize = platformSize / 2; // 4 for 8x8 platform
+    
+    if (isFenceOrGate) {
+      // For fences and gates, adjust boundaries to account for transform at end rather than center
+      // X: negative side pulled in to -2.5, positive side stays at 3.5
+      // Z: negative side at -2.5, positive side extended back to 3.5 for proper alignment
+      return x >= -2.5 && x <= 3.5 && z >= -2.5 && z <= 3.5;
+    } else {
+      // For other objects, use standard grid centers (up to 3 for 8x8 platform)  
+      const objectMaxPosition = halfSize - 1; // 3 for 8x8 platform
+      return x >= -objectMaxPosition && x <= objectMaxPosition && z >= -objectMaxPosition && z <= objectMaxPosition;
+    }
   };
 
   // Check if fences connect - updated for grid intersection placement
@@ -93,13 +103,13 @@ const PlacementSystem: React.FC = () => {
     raycaster.current.ray.intersectPlane(plane, intersection);
     
     if (intersection) {
-      const isFence = currentDragItem === 'fence';
-      const snappedX = snapToGrid(intersection.x, isFence);
-      const snappedZ = snapToGrid(intersection.z, isFence);
+      const isFenceOrGate = currentDragItem === 'fence' || currentDragItem === 'gate';
+      const snappedX = snapToGrid(intersection.x, isFenceOrGate);
+      const snappedZ = snapToGrid(intersection.z, isFenceOrGate);
       
       // Only update preview position if within bounds
       // Use intersection.y (which is 1) to place objects on the raised platform
-      if (isWithinBounds(snappedX, snappedZ)) {
+      if (isWithinBounds(snappedX, snappedZ, isFenceOrGate)) {
         setPreviewPosition([snappedX, intersection.y, snappedZ]);
       }
     }
@@ -119,7 +129,8 @@ const PlacementSystem: React.FC = () => {
     if (!currentDragItem) return;
 
     // Check if the current preview position is within bounds before placing
-    if (!isWithinBounds(previewPosition[0], previewPosition[2])) {
+    const isFenceOrGatePlacement = currentDragItem === 'fence' || currentDragItem === 'gate';
+    if (!isWithinBounds(previewPosition[0], previewPosition[2], isFenceOrGatePlacement)) {
       return; // Don't place if outside bounds
     }
 
@@ -179,7 +190,8 @@ const PlacementSystem: React.FC = () => {
     if (!currentDragItem) return null;
 
     // Only show preview if within bounds
-    if (!isWithinBounds(previewPosition[0], previewPosition[2])) {
+    const isPreviewFenceOrGate = currentDragItem === 'fence' || currentDragItem === 'gate';
+    if (!isWithinBounds(previewPosition[0], previewPosition[2], isPreviewFenceOrGate)) {
       return null;
     }
 
@@ -279,7 +291,7 @@ const PlacementSystem: React.FC = () => {
       )}
       
       {/* Grid helper visualization when placing */}
-      {currentDragItem && !deleteMode && isWithinBounds(previewPosition[0], previewPosition[2]) && (
+      {currentDragItem && !deleteMode && isWithinBounds(previewPosition[0], previewPosition[2], currentDragItem === 'fence' || currentDragItem === 'gate') && (
         <mesh position={previewPosition} rotation={[-Math.PI / 2, 0, 0]}>
           <planeGeometry args={[1, 1]} />
           <meshBasicMaterial 
