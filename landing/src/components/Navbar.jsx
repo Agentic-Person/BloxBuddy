@@ -100,7 +100,7 @@ const Navbar = () => {
           >
             <AnimatedCTAButton
               onClick={() => handleNavClick('ready')}
-              text="Get Started"
+              text="Enter Padawan Training"
               size="small"
             />
           </motion.div>

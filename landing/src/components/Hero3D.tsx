@@ -77,7 +77,7 @@ const Hero3D: React.FC = () => {
             <div>
               <AnimatedCTAButton
                 onClick={() => smoothScrollTo('ready')}
-                text="Start Building"
+                text="Enter Padawan Training"
                 size="large"
               />
             </div>
@@ -92,14 +92,15 @@ const Hero3D: React.FC = () => {
               whileTap={{ scale: 0.95 }}
               transition={{ type: "spring", stiffness: 400, damping: 25 }}
             >
-              Learn More
+              Explain Please
             </motion.button>
           </motion.div>
         </motion.div>
       </div>
 
-      {/* 3D Interactive Game Window - 16:9 Split Layout */}
-      <div className="flex-1 flex items-center justify-center px-4 pt-8 pb-8">
+
+      {/* 3D Interactive Game Window - Centered layout */}
+      <div className="flex-1 flex items-center justify-center px-4 pb-8">
         <motion.div 
           style={{ width: '90%', maxWidth: '1200px', aspectRatio: '16/9' }}
           initial={{ opacity: 0, y: 50 }}
@@ -110,68 +111,75 @@ const Hero3D: React.FC = () => {
         <div className="w-full h-full relative rounded-3xl overflow-hidden shadow-2xl isolate">
           {/* Fancy Border - Gradient with glow effect */}
           <div className="absolute inset-0 bg-gradient-to-r from-green-400 via-blue-500 to-purple-600 p-1 rounded-3xl">
-            <div className="w-full h-full bg-slate-900/95 backdrop-blur-sm rounded-3xl overflow-hidden flex">
+            <div className="w-full h-full bg-slate-900/95 backdrop-blur-sm rounded-3xl overflow-hidden relative">
               
-              {/* Left Panel - Instructions & Game Palette */}
-              <div className="w-1/3 h-full bg-slate-800/50 border-r border-white/10 p-6 flex flex-col overflow-hidden">
-                {/* Interactive Demo Badge */}
+              {/* Control Instructions - Top left, moved right 100px */}
+              <div className="absolute top-4 z-30" style={{ left: 'calc(1rem + 100px)' }}>
                 <motion.div 
-                  className="bg-gradient-to-r from-green-400 to-blue-500 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg mb-6 text-center"
+                  className="text-white/70 text-xs space-y-1 mb-4"
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 1.5, duration: 0.5 }}
+                  transition={{ delay: 2.1, duration: 0.5 }}
                 >
-                  ✨ Interactive Demo
+                  <div>Press R to rotate objects</div>
+                  <div>Press D to delete objects</div>
                 </motion.div>
+              </div>
 
-                {/* Game Instructions */}
+              {/* Floating Object Palette - Left side, vertically centered */}
+              <div className="absolute left-4 top-1/2 transform -translate-y-1/2 z-30">
                 <motion.div 
-                  className="mb-8"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 1.7, duration: 0.5 }}
-                >
-                  <h4 className="text-white font-bold mb-4 flex items-center gap-2">
-                    <span className="text-xl">🎯</span>
-                    How to Play
-                  </h4>
-                  <ul className="text-sm text-gray-200 space-y-3">
-                    <li className="flex items-start gap-3">
-                      <span className="w-6 h-6 bg-green-400 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5">1</span>
-                      <span>Click an object below to select it</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <span className="w-6 h-6 bg-blue-400 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5">2</span>
-                      <span>Click on the green platform to place</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <span className="w-6 h-6 bg-purple-400 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5">3</span>
-                      <span>Press <kbd className="bg-white/20 px-2 py-1 rounded-md font-mono text-xs">R</kbd> to rotate objects</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <span className="w-6 h-6 bg-orange-400 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5">4</span>
-                      <span>Press <kbd className="bg-white/20 px-2 py-1 rounded-md font-mono text-xs">D</kbd> to enter delete mode</span>
-                    </li>
-                  </ul>
-                </motion.div>
-
-                {/* Object Palette - Embedded in Left Panel */}
-                <motion.div 
-                  className="flex-1"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 1.9, duration: 0.5 }}
                 >
-                  <h4 className="text-white font-bold mb-4 flex items-center gap-2">
-                    <span className="text-xl">🛠️</span>
-                    Building Tools
-                  </h4>
                   <ObjectPalette />
                 </motion.div>
               </div>
 
-              {/* Right Panel - 3D Game Board */}
-              <div className="w-2/3 h-full relative bg-gradient-to-br from-slate-900 via-purple-900 to-blue-900 overflow-hidden">
+              {/* Full-width 3D Game Board */}
+              <div className="w-full h-full relative bg-gradient-to-br from-slate-900 via-purple-900 to-blue-900 overflow-hidden">
+                
+                {/* Holographic CTA Window - Top right, moved 300px left */}
+                <div className="absolute top-4 z-40" style={{ right: 'calc(1rem + 300px)' }}>
+                  <motion.div 
+                    className="relative group cursor-pointer"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 1.5, duration: 0.8 }}
+                    whileHover={{ scale: 1.05 }}
+                  >
+                    {/* Holographic border with golden glow */}
+                    <div className="relative bg-black/30 backdrop-blur-md rounded-xl p-4 border border-yellow-400/60 shadow-lg">
+                      {/* Golden glow effect */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 via-orange-400/20 to-yellow-400/20 rounded-xl blur-sm -z-10"></div>
+                      
+                      {/* Content */}
+                      <div className="text-center">
+                        {/* Default text */}
+                        <div className="group-hover:opacity-0 transition-opacity duration-300">
+                          <div className="text-yellow-300 text-sm font-medium leading-tight">
+                            Build your farm<br />in under 1 minute
+                          </div>
+                        </div>
+                        
+                        {/* Hover text */}
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          <div className="text-yellow-100 text-2xl font-bold tracking-wider">
+                            PLAY
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Animated border shimmer */}
+                      <div className="absolute inset-0 rounded-xl border border-yellow-400/40 animate-pulse"></div>
+                    </div>
+                    
+                    {/* Extra glow on hover */}
+                    <div className="absolute inset-0 bg-yellow-400/10 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-lg -z-20"></div>
+                  </motion.div>
+                </div>
+                
                 {/* Delete Mode Indicator */}
                 {deleteMode && (
                   <motion.div 

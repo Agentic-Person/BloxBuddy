@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { useThree, useFrame } from '@react-three/fiber';
+import { useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useGameStore } from '../../store/gameStore';
 import FenceComponent from './objects/FenceComponent';
@@ -9,18 +9,23 @@ import {
   TreeComponent, 
   HayBaleComponent, 
   WaterTroughComponent, 
-  ScarecrowComponent 
+  ScarecrowComponent,
+  ChickenCoopComponent,
+  FeedDispenserComponent,
+  WaterFountainComponent,
+  SmallBarnComponent
 } from './objects/BuildingObjects';
 import { Sparkles } from '@react-three/drei';
 
 const PlacementSystem: React.FC = () => {
-  const { camera, gl, scene } = useThree();
+  const { camera, gl } = useThree();
   const { placedObjects, addObject, removeObject, currentDragItem, setCurrentDragItem, deleteMode, setDeleteMode } = useGameStore();
   const [previewPosition, setPreviewPosition] = useState<[number, number, number]>([0, 0, 0]);
   const [rotation, setRotation] = useState(0);
   const [showSparkles, setShowSparkles] = useState(false);
   const [sparklePosition, setSparklePosition] = useState<[number, number, number]>([0, 0, 0]);
   const [hoveredObjectId, setHoveredObjectId] = useState<string | null>(null);
+  const [connectionSparkles, setConnectionSparkles] = useState<Array<{id: string, position: [number, number, number]}>>([]);
   const raycaster = useRef(new THREE.Raycaster());
   const mouse = useRef(new THREE.Vector2());
 
@@ -52,13 +57,30 @@ const PlacementSystem: React.FC = () => {
     }
   };
 
-  // Check if fences connect - updated for grid intersection placement
-  const checkFenceConnection = (pos: [number, number, number], currentRotation: number): boolean => {
+  // Calculate stacking height for hay bales
+  const calculateStackHeight = (x: number, z: number, type: string): number => {
+    if (type !== 'hay_bale') return 0; // Only hay bales can stack
+    
+    // Find all hay bales at this grid position
+    const hayBalesAtPosition = placedObjects.filter(obj => 
+      obj.type === 'hay_bale' &&
+      Math.abs(obj.position[0] - x) < 0.1 &&
+      Math.abs(obj.position[2] - z) < 0.1
+    );
+    
+    // Calculate the Y position for the next hay bale (each hay bale is 0.4 units tall)
+    return hayBalesAtPosition.length * 0.4;
+  };
+
+  // Enhanced fence connection checking with multiple connection detection
+  const checkFenceConnection = (pos: [number, number, number], currentRotation: number): { isConnected: boolean, connectionCount: number, connectionPositions: Array<[number, number, number]> } => {
     if (currentDragItem !== 'fence' && currentDragItem !== 'gate') {
-      return false;
+      return { isConnected: false, connectionCount: 0, connectionPositions: [] };
     }
     
-    return placedObjects.some(obj => {
+    const connectionPositions: Array<[number, number, number]> = [];
+    
+    placedObjects.forEach(obj => {
       if (obj.type === 'fence' || obj.type === 'gate') {
         const dx = obj.position[0] - pos[0];
         const dz = obj.position[2] - pos[2];
@@ -74,16 +96,25 @@ const PlacementSystem: React.FC = () => {
             
             // Horizontal fence should connect horizontally (dx != 0, dz = 0)
             // Vertical fence should connect vertically (dx = 0, dz != 0)
-            return (isHorizontalPlacement && Math.abs(dx) === 1 && Math.abs(dz) < 0.1) ||
-                   (isVerticalPlacement && Math.abs(dx) < 0.1 && Math.abs(dz) === 1);
+            if ((isHorizontalPlacement && Math.abs(dx) === 1 && Math.abs(dz) < 0.1) ||
+                (isVerticalPlacement && Math.abs(dx) < 0.1 && Math.abs(dz) === 1)) {
+              connectionPositions.push(obj.position);
+            }
+          } else {
+            // Gates can connect in any adjacent direction
+            if ((Math.abs(dx) === 1 && Math.abs(dz) < 0.1) || (Math.abs(dx) < 0.1 && Math.abs(dz) === 1)) {
+              connectionPositions.push(obj.position);
+            }
           }
-          
-          // Gates can connect in any adjacent direction
-          return (Math.abs(dx) === 1 && Math.abs(dz) < 0.1) || (Math.abs(dx) < 0.1 && Math.abs(dz) === 1);
         }
       }
-      return false;
     });
+    
+    return {
+      isConnected: connectionPositions.length > 0,
+      connectionCount: connectionPositions.length,
+      connectionPositions
+    };
   };
 
 
@@ -108,9 +139,11 @@ const PlacementSystem: React.FC = () => {
       const snappedZ = snapToGrid(intersection.z, isFenceOrGate);
       
       // Only update preview position if within bounds
-      // Use intersection.y (which is 1) to place objects on the raised platform
       if (isWithinBounds(snappedX, snappedZ, isFenceOrGate)) {
-        setPreviewPosition([snappedX, intersection.y, snappedZ]);
+        // For hay bales, calculate the correct Y position for stacking
+        const stackHeight = calculateStackHeight(snappedX, snappedZ, currentDragItem);
+        const yPosition = stackHeight > 0 ? stackHeight : 1; // Stack or use platform height (1)
+        setPreviewPosition([snappedX, yPosition, snappedZ]);
       }
     }
   }, [currentDragItem, camera, gl]);
@@ -134,23 +167,50 @@ const PlacementSystem: React.FC = () => {
       return; // Don't place if outside bounds
     }
 
+    // Calculate stacking height for this position
+    const stackHeight = calculateStackHeight(previewPosition[0], previewPosition[2], currentDragItem);
+    const finalPosition: [number, number, number] = [
+      previewPosition[0],
+      stackHeight > 0 ? stackHeight : 1, // Use stack height for hay bales, platform height (1) for others
+      previewPosition[2]
+    ];
+
     const newObject = {
       id: `${currentDragItem}-${Date.now()}`,
       type: currentDragItem,
-      position: previewPosition,
+      position: finalPosition,
       rotation: [0, rotation, 0] as [number, number, number],
     };
 
     addObject(newObject);
     
-    // Show sparkles for fence placement
-    if (currentDragItem === 'fence') {
+    // Enhanced sparkles for fence/gate placement with connection feedback
+    if (currentDragItem === 'fence' || currentDragItem === 'gate') {
+      const connectionResult = checkFenceConnection(previewPosition, rotation);
+      
       setSparklePosition(previewPosition);
       setShowSparkles(true);
       setTimeout(() => setShowSparkles(false), 1000);
       
-      // Play a "click" sound effect (in a real app)
-      // playSound('fence-click');
+      // Show connection sparkles at connecting positions
+      if (connectionResult.isConnected) {
+        const newConnectionSparkles = connectionResult.connectionPositions.map((pos, index) => ({
+          id: `connection-${Date.now()}-${index}`,
+          position: pos
+        }));
+        
+        setConnectionSparkles(prev => [...prev, ...newConnectionSparkles]);
+        
+        // Remove connection sparkles after animation
+        setTimeout(() => {
+          setConnectionSparkles(prev => 
+            prev.filter(sparkle => !newConnectionSparkles.find(newSparkle => newSparkle.id === sparkle.id))
+          );
+        }, 1500);
+      }
+      
+      // Play a satisfying "click" sound effect based on connection count
+      // In a real app: playSound(connectionResult.connectionCount > 0 ? 'fence-connect' : 'fence-place');
     }
   }, [currentDragItem, previewPosition, rotation, addObject, deleteMode, hoveredObjectId, removeObject]);
 
@@ -195,12 +255,12 @@ const PlacementSystem: React.FC = () => {
       return null;
     }
 
-    const isConnected = checkFenceConnection(previewPosition, rotation);
+    const connectionResult = checkFenceConnection(previewPosition, rotation);
     const props = {
       position: previewPosition,
       rotation,
       isPreview: true,
-      isConnected,
+      isConnected: connectionResult.isConnected,
     };
 
     switch (currentDragItem) {
@@ -218,6 +278,14 @@ const PlacementSystem: React.FC = () => {
         return <WaterTroughComponent {...props} />;
       case 'scarecrow':
         return <ScarecrowComponent {...props} />;
+      case 'chicken_coop':
+        return <ChickenCoopComponent {...props} />;
+      case 'feed_dispenser':
+        return <FeedDispenserComponent {...props} />;
+      case 'water_fountain':
+        return <WaterFountainComponent {...props} />;
+      case 'small_barn':
+        return <SmallBarnComponent {...props} />;
       default:
         return null;
     }
@@ -251,7 +319,7 @@ const PlacementSystem: React.FC = () => {
 
             switch (obj.type) {
               case 'fence':
-                return <FenceComponent {...props} isConnected={checkFenceConnection(obj.position, obj.rotation[1])} />;
+                return <FenceComponent {...props} isConnected={checkFenceConnection(obj.position, obj.rotation[1]).isConnected} />;
               case 'gate':
                 return <GateComponent {...props} />;
               case 'house':
@@ -264,6 +332,14 @@ const PlacementSystem: React.FC = () => {
                 return <WaterTroughComponent {...props} />;
               case 'scarecrow':
                 return <ScarecrowComponent {...props} />;
+              case 'chicken_coop':
+                return <ChickenCoopComponent {...props} />;
+              case 'feed_dispenser':
+                return <FeedDispenserComponent {...props} />;
+              case 'water_fountain':
+                return <WaterFountainComponent {...props} />;
+              case 'small_barn':
+                return <SmallBarnComponent {...props} />;
               default:
                 return null;
             }
@@ -289,6 +365,19 @@ const PlacementSystem: React.FC = () => {
           color="#00ff88"
         />
       )}
+      
+      {/* Connection sparkles */}
+      {connectionSparkles.map((sparkle) => (
+        <Sparkles
+          key={sparkle.id}
+          position={sparkle.position}
+          count={20}
+          scale={1.5}
+          size={2}
+          speed={3}
+          color="#ffaa00"
+        />
+      ))}
       
       {/* Grid helper visualization when placing */}
       {currentDragItem && !deleteMode && isWithinBounds(previewPosition[0], previewPosition[2], currentDragItem === 'fence' || currentDragItem === 'gate') && (
