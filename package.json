@@ -17,10 +17,20 @@
     "landing",
     "app"
   ],
-  "keywords": ["roblox", "learning", "3d-game", "education", "nextjs", "react"],
+  "keywords": [
+    "roblox",
+    "learning",
+    "3d-game",
+    "education",
+    "nextjs",
+    "react"
+  ],
   "author": "Agentic Person",
   "repository": {
     "type": "git",
     "url": "https://github.com/Agentic-Person/BloxBuddy"
+  },
+  "dependencies": {
+    "ajv": "^8.17.1"
   }
 }
